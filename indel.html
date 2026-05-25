@@ -1,0 +1,742 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ultimate iPhone Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <style>
+      /* --- Basic Styles --- */
+      body {
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        background: #e0e5ec;
+        font-family: "Roboto Mono", monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+      }
+      .widget-container {
+        position: absolute;
+        width: 320px;
+        height: 200px;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #e0e5ec, #f0f3f8);
+        box-shadow: 20px 20px 60px #c5c9d1, -20px -20px 60px #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        overflow: hidden;
+        transition: 0.3s;
+        touch-action: none;
+      }
+      .widget-container:hover {
+        transform: scale(1.03);
+      }
+      .time-display {
+        font-size: 2.5rem;
+        color: #333;
+        z-index: 2;
+        text-align: center;
+      }
+      .time-display.neon {
+        text-shadow: 0 0 5px #00fff0, 0 0 10px #00fff0;
+        color: #00fff0;
+      }
+      .analog-clock {
+        position: absolute;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+      .analog-clock .hand {
+        position: absolute;
+        width: 50%;
+        height: 2px;
+        background: #333;
+        transform-origin: 100%;
+        top: 50%;
+        left: 50%;
+      }
+      .analog-clock .hand.hour {
+        height: 4px;
+      }
+      .analog-clock .hand.second {
+        background: #00bfff;
+      }
+      .weather-info,
+      .stock-info,
+      .timer-info,
+      .greeting {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        z-index: 3;
+      }
+      #particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .search-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+      }
+      .search-box {
+        width: 90%;
+        max-width: 500px;
+        background: #f8f9fb;
+        padding: 20px;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+      }
+      .search-box input {
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 1rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+      .search-box button {
+        padding: 10px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 6px;
+        background: #00bfff;
+        color: white;
+        cursor: pointer;
+      }
+      .search-box button:hover {
+        background: #009acd;
+      }
+      .results {
+        margin-top: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .result-item {
+        padding: 5px;
+        border-bottom: 1px solid #ddd;
+      }
+      .theme-toggle {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 4;
+        background: #00bfff;
+        padding: 6px 12px;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+      }
+      .theme-toggle:hover {
+        background: #009acd;
+      }
+      canvas.chartCanvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+    </style>
+  </head>
+  <body>
+    Widgets
+    <div class="widget-container" id="clockWidget">
+      <canvas id="particlesClock"></canvas>
+      <div class="time-display" id="timeDisplay">00:00:00</div>
+      <div class="analog-clock" id="analogClock">
+        <div class="hand hour" id="hourHand"></div>
+        <div class="hand minute" id="minuteHand"></div>
+        <div class="hand second" id="secondHand"></div>
+      </div>
+      <div class="greeting" id="greetingText">Hello!</div>
+    </div>
+
+    <div
+      class="widget-container"
+      id="weatherWidget"
+      style="top: 250px; left: 50px"
+    >
+      <div class="weather-info" id="weatherInfo">Sunny 25°C</div>
+      <canvas id="particlesWeather"></canvas>
+    </div>
+
+    <div
+      class="widget-container"
+      id="stockWidget"
+      style="top: 500px; left: 50px"
+    >
+      <div class="stock-info" id="stockInfo">BTC:$30k ETH:$2k</div>
+      <canvas id="stockChart" class="chartCanvas"></canvas>
+    </div>
+
+    <div
+      class="widget-container"
+      id="timerWidget"
+      style="top: 250px; left: 400px"
+    >
+      <div class="timer-info" id="timerInfo">Countdown: 00:10</div>
+      <button onclick="startCountdown()">Start Timer</button>
+    </div>
+
+    Search Overlay
+
+    <div class="search-overlay" id="searchOverlay">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search products..." />
+        <button id="searchBtn">Search</button>
+        <div class="results" id="searchResults"></div>
+        <button id="closeSearch" style="margin-top: 10px">Close</button>
+      </div>
+    </div>
+
+    <div class="theme-toggle" id="themeToggle">Theme</div>
+
+    <script>
+      // --- Clock ---
+      const timeDisplay = document.getElementById("timeDisplay");
+      const analogClock = document.getElementById("analogClock");
+      const hourHand = document.getElementById("hourHand");
+      const minuteHand = document.getElementById("minuteHand");
+      const secondHand = document.getElementById("secondHand");
+      const greetingText = document.getElementById("greetingText");
+
+      function updateTime() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, "0");
+        const m = String(now.getMinutes()).padStart(2, "0");
+        const s = String(now.getSeconds()).padStart(2, "0");
+        timeDisplay.textContent = `${h}:${m}:${s}`;
+        timeDisplay.classList.toggle("neon", s % 2 === 0);
+        greetingText.textContent =
+          now.getHours() < 12
+            ? "Good Morning"
+            : now.getHours() < 18
+            ? "Good Afternoon"
+            : "Good Evening";
+
+        // Analog clock
+        const hr = now.getHours() % 12;
+        const min = now.getMinutes();
+        const sec = now.getSeconds();
+        hourHand.style.transform = `rotate(${hr * 30 + min * 0.5}deg)`;
+        minuteHand.style.transform = `rotate(${min * 6 + sec * 0.1}deg)`;
+        secondHand.style.transform = `rotate(${sec * 6}deg)`;
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+
+      // --- Particles ---
+      class Particle {
+        constructor(canvas) {
+          this.canvas = canvas;
+          this.ctx = canvas.getContext("2d");
+          this.reset();
+        }
+        reset() {
+          this.x = Math.random() * this.canvas.width;
+          this.y = Math.random() * this.canvas.height;
+          this.r = Math.random() * 2 + 1;
+          this.xv = (Math.random() - 0.5) * 0.5;
+          this.yv = (Math.random() - 0.5) * 0.5;
+          this.alpha = Math.random() * 0.5 + 0.2;
+        }
+        update() {
+          this.x += this.xv;
+          this.y += this.yv;
+          if (
+            this.x < 0 ||
+            this.x > this.canvas.width ||
+            this.y < 0 ||
+            this.y > this.canvas.height
+          )
+            this.reset();
+        }
+        draw() {
+          this.ctx.beginPath();
+          this.ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          this.ctx.fillStyle = `rgba(0,255,255,${this.alpha})`;
+          this.ctx.fill();
+        }
+      }
+      function createParticles(canvas) {
+        let particles = [];
+        for (let i = 0; i < 50; i++) particles.push(new Particle(canvas));
+        function animate() {
+          canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+          particles.forEach((p) => {
+            p.update();
+            p.draw();
+          });
+          requestAnimationFrame(animate);
+        }
+        animate();
+        return particles;
+      }
+      const clockParticles = createParticles(
+        document.getElementById("particlesClock")
+      );
+      const weatherParticles = createParticles(
+        document.getElementById("particlesWeather")
+      );
+
+      // --- Search ---
+      const searchOverlay = document.getElementById("searchOverlay");
+      const searchInput = document.getElementById("searchInput");
+      const searchBtn = document.getElementById("searchBtn");
+      const searchResults = document.getElementById("searchResults");
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "s") searchOverlay.style.display = "flex";
+      });
+      document.getElementById("closeSearch").addEventListener("click", () => {
+        searchOverlay.style.display = "none";
+        searchResults.innerHTML = "";
+      });
+      searchBtn.addEventListener("click", () => {
+        const q = searchInput.value.trim();
+        if (!q) return;
+        searchResults.innerHTML = "<div>Searching...</div>";
+        setTimeout(() => {
+          const fake = [
+            { name: q + " Pro Max", price: "$999" },
+            { name: q + " Mini", price: "$499" },
+          ];
+          searchResults.innerHTML = "";
+          fake.forEach((item) => {
+            const div = document.createElement("div");
+            div.className = "result-item";
+            div.innerHTML = `<strong>${item.name}</strong><br>Price:${item.price}`;
+            searchResults.appendChild(div);
+          });
+        }, 700);
+      });
+
+      // --- Theme toggle ---
+      let darkMode = false;
+      document.getElementById("themeToggle").addEventListener("click", () => {
+        darkMode = !darkMode;
+        if (darkMode) {
+          document.body.style.background = "#1a1a1a";
+        } else {
+          document.body.style.background = "#e0e5ec";
+        }
+      });
+
+      // --- Draggable Widgets ---
+      interact(".widget-container").draggable({
+        inertia: true,
+        modifiers: [interact.modifiers.restrictRect({ restriction: "parent" })],
+        listeners: {
+          move(event) {
+            const target = event.target;
+            const x =
+              (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
+            const y =
+              (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+            target.style.transform = `translate(${x}px,${y}px)`;
+            target.setAttribute("data-x", x);
+            target.setAttribute("data-y", y);
+          },
+        },
+      });
+
+      // --- Countdown Timer ---
+      let timerInterval;
+      function startCountdown() {
+        let timeLeft = 10;
+        const timerInfo = document.getElementById("timerInfo");
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerInfo.textContent = "Time Up!";
+            new Notification("Timer Finished!");
+          } else {
+            timerInfo.textContent = `Countdown: 00:${
+              timeLeft < 10 ? "0" : ""
+            }${timeLeft}`;
+            timeLeft--;
+          }
+        }, 1000);
+      }
+
+      // --- Stock Chart ---
+      const ctxStock = document.getElementById("stockChart").getContext("2d");
+      const stockChart = new Chart(ctxStock, {
+        type: "line",
+        data: {
+          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+          datasets: [
+            {
+              label: "BTC",
+              data: [30, 32, 31, 33, 34, 32],
+              borderColor: "#00bfff",
+              fill: false,
+            },
+            {
+              label: "ETH",
+              data: [2, 2.1, 2.05, 2.2, 2.15, 2],
+              borderColor: "#ff9900",
+              fill: false,
+            },
+          ],
+        },
+      });
+
+      // --- Voice Commands ---
+      if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+        const recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
+        recognition.onresult = (e) => {
+          const cmd = e.results[0][0].transcript.toLowerCase();
+          if (cmd.includes("toggle clock")) {
+            analogClock.style.display =
+              analogClock.style.display === "flex" ? "none" : "flex";
+            timeDisplay.style.display =
+              timeDisplay.style.display === "block" ? "none" : "block";
+          }
+          if (cmd.includes("search")) searchOverlay.style.display = "flex";
+        };
+        recognition.start();
+      }
+
+      // --- Push Notification Permission ---
+      if (Notification.permission !== "granted")
+        Notification.requestPermission();
+
+      // --- Cursor Tilt Effect ---
+      document.addEventListener("mousemove", (e) => {
+        document.querySelectorAll(".widget-container").forEach((w) => {
+          w.style.transform = `translate(${
+            parseFloat(w.getAttribute("data-x")) || 0
+          }px,${parseFloat(w.getAttribute("data-y")) || 0}px) rotateY(${
+            (e.clientX / window.innerWidth - 0.5) * 20
+          }deg) rotateX(${-(e.clientY / window.innerHeight - 0.5) * 20}deg)`;
+        });
+      });
+    </script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeumorphX SPA</title>
+  </head>
+  <body>
+    <div id="island">
+      <span id="time"></span>
+      <canvas id="waveform"></canvas>
+    </div>
+    <div id="notifications"></div>
+    <div id="hologram">
+      <div class="holo-card"></div>
+    </div>
+
+    <nav>
+      <div class="logo">NeumorphX</div>
+      <ul>
+        <li data-section="home">Home</li>
+        <li data-section="products">Products</li>
+        <li data-section="about">About</li>
+        <li data-section="contact">Contact</li>
+      </ul>
+      <div class="cart-icon" id="cart-icon">
+        🛒 <span id="cart-count">0</span>
+      </div>
+    </nav>
+
+    <section id="home" class="section active">
+      <h1>Welcome to NeumorphX SPA</h1>
+      <p>Soft, neumorphic UI with a dynamic iPhone Island!</p>
+    </section>
+
+    <section id="products" class="section">
+      <h2>Products</h2>
+      <input type="text" id="search" placeholder="Search products..." />
+      <div class="product-grid" id="product-grid"></div>
+    </section>
+
+    <section id="about" class="section">
+      <h2>About</h2>
+      <p>
+        NeumorphX SPA with full E-commerce, login, admin, and island features.
+      </p>
+    </section>
+    <div id="dark-mode-toggle">🌙</div>
+
+    <section id="contact" class="section">
+      <h2>Contact</h2>
+      <p>Contact us at support@neumorphx.com</p>
+    </section>
+
+    <div id="login-modal" class="modal">
+      <h2>Login / Signup</h2>
+      <input type="text" id="username" placeholder="Username" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="login-btn">Login</button>
+      <button id="signup-btn">Signup</button>
+    </div>
+
+    <div id="cart-sidebar">
+      <h2>Your Cart</h2>
+      <div id="cart-items"></div>
+      <h3>Total: $<span id="total"></span></h3>
+      <button id="checkout-btn">Checkout</button>
+    </div>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: #e6e9ef;
+        color: #333;
+      }
+      .logo {
+        font-family: sans-serif;
+        font-size: x-large;
+        top: 8rem;
+        font-weight: 800;
+        font-style: italic;
+      }
+      .section {
+        padding: 80px;
+      }
+      .section h2 {
+        font-size: 2.7rem;
+        margin-left: 29rem;
+      }
+      .section p {
+        font-size: 1.2rem;
+        text-align: center;
+      }
+      .section input {
+        width: 26rem;
+        height: 3rem;
+        border-radius: 20px;
+        border: none;
+        margin-left: 22rem;
+        text-align: center;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      }
+      .section.active {
+        display: block;
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 50px;
+        background: #e6e9ef;
+        box-shadow: inset 5px 5px 10px #c4c7cf, inset -5px -5px 10px white;
+        position: sticky;
+        top: 0;
+        z-index: 99;
+      }
+      nav ul {
+        display: flex;
+        gap: 40px;
+        font-size: large;
+        list-style: none;
+      }
+      nav li {
+        cursor: pointer;
+      }
+      .cart-icon {
+        cursor: pointer;
+        font-size: 20px;
+      }
+
+      /* PRODUCT GRID */
+      .product-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+      }
+      .product-card {
+        width: 200px;
+        padding: 20px;
+        margin-left: 2rem;
+        border-radius: 25px;
+        margin-top: 4rem;
+        background: #e6e9ef;
+        box-shadow: 10px 10px 20px #c4c7cf, -10px -10px 20px white;
+        text-align: center;
+      }
+
+      /* ISLAND */
+      #island {
+        position: fixed;
+        top: 30px;
+        left: 80%;
+        transform: translateX(-50%);
+        padding: 18px 40px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 45px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        color: cyan;
+        font-size: 28px;
+        backdrop-filter: blur(18px);
+        cursor: pointer;
+        z-index: 1000;
+      }
+      #waveform {
+        width: 80px;
+        height: 40px;
+        display: none;
+      }
+
+      /* MODALS */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 60%;
+        transform: translate(-50%, -50%);
+        background: #e6e9ef;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 10px 10px 20px #c4c7cf, -10px -10px 20px white;
+      }
+      /* DARK MODE */
+      body.dark {
+        background: #1f1f1f;
+        color: white;
+      }
+      body.dark .product-card {
+        background: #2c2c2c;
+        box-shadow: inset 5px 5px 10px #000, inset -5px -5px 10px #444;
+      }
+    </style>
+
+    <script>
+      // SPA NAVIGATION
+      document.querySelectorAll("nav li").forEach((li) => {
+        li.onclick = () => {
+          document
+            .querySelectorAll(".section")
+            .forEach((s) => s.classList.remove("active"));
+          document.getElementById(li.dataset.section).classList.add("active");
+        };
+      });
+
+      // DARK MODE
+      const darkToggle = document.getElementById("dark-mode-toggle");
+      darkToggle.onclick = () => {
+        document.body.classList.toggle("dark");
+      };
+
+      // PRODUCTS
+      let products = [
+        { id: 1, name: "Smart Speaker", price: 129 },
+        { id: 2, name: "Wireless Earbuds", price: 99 },
+        { id: 3, name: "UltraWatch", price: 249 },
+        { id: 4, name: "Smart Lamp", price: 79 },
+      ];
+      let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+      function displayProducts(filter = "") {
+        const grid = document.getElementById("product-grid");
+        grid.innerHTML = "";
+        products
+          .filter((p) => p.name.toLowerCase().includes(filter.toLowerCase()))
+          .forEach((p) => {
+            let card = document.createElement("div");
+            card.className = "product-card";
+            card.innerHTML = `<h3>${p.name}</h3><p>$${p.price}</p>
+             <button onclick="addToCart(${p.id})">Add to Cart</button>`;
+            grid.appendChild(card);
+          });
+      }
+      displayProducts();
+
+      // SEARCH
+      document.getElementById("search").addEventListener("input", (e) => {
+        displayProducts(e.target.value);
+      });
+
+      // CART FUNCTIONS
+      function addToCart(id) {
+        let p = products.find((x) => x.id === id);
+        let item = cart.find((x) => x.id === id);
+        if (item) {
+          item.qty++;
+        } else {
+          cart.push({ ...p, qty: 1 });
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateCart();
+      }
+
+      function updateCart() {
+        const box = document.getElementById("cart-items");
+        box.innerHTML = "";
+        let total = 0;
+        cart.forEach((i) => {
+          total += i.qty * i.price;
+          let div = document.createElement("div");
+          div.innerHTML = `${i.name} x${i.qty} = $${
+            i.qty * i.price
+          } <button onclick="removeFromCart(${i.id})">X</button>`;
+          box.appendChild(div);
+        });
+        document.getElementById("cart-count").textContent = cart.reduce(
+          (t, i) => t + i.qty,
+          0
+        );
+        document.getElementById("total").textContent = total.toFixed(2);
+      }
+      function removeFromCart(id) {
+        cart = cart.filter((x) => x.id !== id);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateCart();
+      }
+      document.getElementById("checkout-btn").onclick = () => {
+        alert("Order placed! 🎉");
+        cart = [];
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateCart();
+      };
+      updateCart();
+
+      // DYNAMIC ISLAND CLOCK
+      const timeEl = document.getElementById("time");
+      function updateClock() {
+        timeEl.textContent = new Date().toLocaleTimeString();
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+    </script>
+  </body>
+</html>
