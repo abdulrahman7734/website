@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Gradient Customizer</title>
+    <style>
+      body {
+        font-family: "Helvetica", sans-serif;
+        background: #f9f9f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      /* Example page element to show gradient */
+      .sample-box {
+        width: 80%;
+        max-width: 600px;
+        height: 150px;
+        margin: 50px auto;
+        border-radius: 16px;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: bold;
+        font-size: 24px;
+        text-align: center;
+      }
+
+      /* Floating toggle button */
+      .toggle-btn {
+        position: fixed;
+        top: 40px;
+        right: 40px;
+        width: 50px;
+        height: 50px;
+        background: #0077ff;
+        border-radius: 50%;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+        color: #fff;
+        font-size: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1100;
+      }
+      .toggle-btn:hover {
+        background: #005bb5;
+      }
+
+      /* Gradient Picker Panel */
+      .gradient-picker {
+        position: fixed;
+        top: 40px;
+        right: 40px;
+        width: 360px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        padding: 16px;
+        z-index: 1000;
+        display: none;
+        cursor: grab;
+      }
+      .gradient-picker h3 {
+        margin: 0 0 10px;
+        font-size: 16px;
+        text-align: center;
+        color: #333;
+      }
+
+      /* Gradient preview bar */
+      .gradient-preview {
+        height: 80px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        position: relative;
+      }
+
+      /* Color stop controls */
+      .color-stops {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 8px;
+      }
+
+      .color-stop {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .color-stop input[type="color"],
+      .color-stop input[type="range"] {
+        margin: 2px 0;
+        cursor: pointer;
+      }
+
+      .color-stop button {
+        margin-top: 4px;
+        cursor: pointer;
+      }
+
+      /* Add stop & copy buttons */
+      .add-stop-btn,
+      .copy-btn {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 8px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .add-stop-btn {
+        background: #28a745;
+        color: #fff;
+      }
+      .add-stop-btn:hover {
+        background: #218838;
+      }
+      .copy-btn {
+        background: #0077ff;
+        color: #fff;
+      }
+      .copy-btn:hover {
+        background: #005bb5;
+      }
+
+      /* Gradient type & direction */
+      .gradient-type,
+      .direction-select {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 12px;
+        font-size: 14px;
+      }
+
+      /* Presets */
+      .presets {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .preset {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      .preset:hover {
+        border-color: #0077ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sample-box" id="sampleBox">Live Gradient Preview</div>
+
+    <div class="toggle-btn" id="toggleBtn">🎨</div>
+
+    <div class="gradient-picker" id="picker">
+      <h3>Gradient Customizer</h3>
+
+      <select id="gradientType" class="gradient-type">
+        <option value="linear">Linear Gradient</option>
+        <option value="radial">Radial Gradient</option>
+        <option value="conic">Conic Gradient</option>
+      </select>
+
+      <select id="direction" class="direction-select">
+        <option value="to right">→ To Right</option>
+        <option value="to left">← To Left</option>
+        <option value="to bottom">↓ To Bottom</option>
+        <option value="to top">↑ To Top</option>
+        <option value="45deg">↘ 45°</option>
+        <option value="135deg">↖ 135°</option>
+      </select>
+
+      <div class="gradient-preview" id="preview"></div>
+
+      <div class="color-stops" id="stopsContainer"></div>
+      <button class="add-stop-btn" id="addStopBtn">+ Add Color Stop</button>
+
+      <div class="presets" id="presetsContainer"></div>
+
+      <button class="copy-btn" id="copyBtn">Copy CSS</button>
+    </div>
+
+    <script>
+      // Elements
+      const toggleBtn = document.getElementById("toggleBtn");
+      const picker = document.getElementById("picker");
+      const preview = document.getElementById("preview");
+      const stopsContainer = document.getElementById("stopsContainer");
+      const addStopBtn = document.getElementById("addStopBtn");
+      const copyBtn = document.getElementById("copyBtn");
+      const gradientType = document.getElementById("gradientType");
+      const direction = document.getElementById("direction");
+      const sampleBox = document.getElementById("sampleBox");
+      const presetsContainer = document.getElementById("presetsContainer");
+
+      let stops = [
+        { color: "#ff0000", pos: 0, alpha: 1 },
+        { color: "#0000ff", pos: 100, alpha: 1 },
+      ];
+
+      // Preset gradients
+      const presets = [
+        {
+          type: "linear",
+          dir: "to right",
+          stops: [
+            { c: "#ff5f6d", p: 0, a: 1 },
+            { c: "#ffc371", p: 100, a: 1 },
+          ],
+        },
+        {
+          type: "linear",
+          dir: "to right",
+          stops: [
+            { c: "#2193b0", p: 0, a: 1 },
+            { c: "#6dd5ed", p: 100, a: 1 },
+          ],
+        },
+        {
+          type: "radial",
+          dir: "circle",
+          stops: [
+            { c: "#f7971e", p: 0, a: 1 },
+            { c: "#ffd200", p: 100, a: 1 },
+          ],
+        },
+        {
+          type: "conic",
+          dir: "from 90deg",
+          stops: [
+            { c: "#ff512f", p: 0, a: 1 },
+            { c: "#dd2476", p: 100, a: 1 },
+          ],
+        },
+      ];
+
+      // Render presets
+      function renderPresets() {
+        presetsContainer.innerHTML = "";
+        presets.forEach((p, i) => {
+          const div = document.createElement("div");
+          div.className = "preset";
+          const grad = p.stops
+            .map((s) => hexToRgba(s.c, s.a) + " " + s.p + "%")
+            .join(",");
+          let css = "";
+          if (p.type === "linear") css = `linear-gradient(${p.dir}, ${grad})`;
+          if (p.type === "radial") css = `radial-gradient(${p.dir}, ${grad})`;
+          if (p.type === "conic") css = `conic-gradient(${p.dir}, ${grad})`;
+          div.style.background = css;
+          div.onclick = () => {
+            stops = p.stops.map((s) => ({ ...s }));
+            gradientType.value = p.type;
+            direction.value = p.dir;
+            renderStops();
+            updatePreview();
+          };
+          presetsContainer.appendChild(div);
+        });
+      }
+
+      // Toggle picker
+      toggleBtn.onclick = () => {
+        if (picker.style.display === "none") {
+          picker.style.display = "block";
+          toggleBtn.style.transform = "rotate(45deg)";
+        } else {
+          picker.style.display = "none";
+          toggleBtn.style.transform = "rotate(0deg)";
+        }
+      };
+
+      // Render color stops
+      function renderStops() {
+        stopsContainer.innerHTML = "";
+        stops.forEach((stop, index) => {
+          const div = document.createElement("div");
+          div.className = "color-stop";
+          div.innerHTML = `
+      <input type="color" value="${stop.color}" data-index="${index}">
+      <input type="range" min="0" max="100" value="${stop.pos}" data-index="${index}">
+      <input type="range" min="0" max="1" step="0.01" value="${stop.alpha}" data-index="${index}" title="Opacity">
+      <button data-index="${index}">✖</button>
+    `;
+          stopsContainer.appendChild(div);
+        });
+
+        // Event listeners
+        stopsContainer
+          .querySelectorAll('input[type="color"]')
+          .forEach((inp) => {
+            inp.oninput = (e) => {
+              stops[e.target.dataset.index].color = e.target.value;
+              updatePreview();
+            };
+          });
+        stopsContainer
+          .querySelectorAll('input[type="range"]')
+          .forEach((inp) => {
+            inp.oninput = (e) => {
+              if (e.target.title === "Opacity") {
+                stops[e.target.dataset.index].alpha = parseFloat(
+                  e.target.value
+                );
+              } else {
+                stops[e.target.dataset.index].pos = parseInt(e.target.value);
+              }
+              updatePreview();
+            };
+          });
+        stopsContainer.querySelectorAll("button").forEach((btn) => {
+          btn.onclick = (e) => {
+            stops.splice(e.target.dataset.index, 1);
+            renderStops();
+            updatePreview();
+          };
+        });
+      }
+
+      // Add new stop
+      addStopBtn.onclick = () => {
+        stops.push({ color: "#00ff00", pos: 50, alpha: 1 });
+        renderStops();
+        updatePreview();
+      };
+
+      // Update preview
+      function updatePreview() {
+        stops.sort((a, b) => a.pos - b.pos);
+        const gradStops = stops
+          .map((s) => hexToRgba(s.color, s.alpha) + " " + s.pos + "%")
+          .join(",");
+        let grad = "";
+        if (gradientType.value === "linear")
+          grad = `linear-gradient(${direction.value}, ${gradStops})`;
+        if (gradientType.value === "radial")
+          grad = `radial-gradient(${direction.value}, ${gradStops})`;
+        if (gradientType.value === "conic")
+          grad = `conic-gradient(${direction.value}, ${gradStops})`;
+        preview.style.background = grad;
+        sampleBox.style.background = grad;
+      }
+
+      // Copy CSS
+      copyBtn.onclick = () => {
+        const gradStops = stops
+          .map((s) => hexToRgba(s.color, s.alpha) + " " + s.pos + "%")
+          .join(",");
+        let grad = "";
+        if (gradientType.value === "linear")
+          grad = `linear-gradient(${direction.value}, ${gradStops})`;
+        if (gradientType.value === "radial")
+          grad = `radial-gradient(${direction.value}, ${gradStops})`;
+        if (gradientType.value === "conic")
+          grad = `conic-gradient(${direction.value}, ${gradStops})`;
+        navigator.clipboard.writeText(`background: ${grad};`).then(() => {
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => (copyBtn.textContent = "Copy CSS"), 1000);
+        });
+      };
+
+      // Helper hex to rgba
+      function hexToRgba(hex, alpha) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r},${g},${b},${alpha})`;
+      }
+
+      // Initialize
+      renderPresets();
+      renderStops();
+      updatePreview();
+    </script>
+  </body>
+</html>
