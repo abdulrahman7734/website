@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ultimate Futuristic Search Bar</title>
+
+    <style>
+      /* ============================
+      GLOBAL PAGE STYLE
+============================ */
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(circle at center, #020202, #000);
+        font-family: "Segoe UI", sans-serif;
+        overflow: hidden;
+        transition: 0.4s;
+      }
+
+      /* ============================
+      LIGHT MODE
+============================ */
+      body.light {
+        background: radial-gradient(circle at center, #ffffff, #bbbbbb);
+        color: #111;
+      }
+
+      /* ============================
+      WRAPPER + ENTRANCE ANIM
+============================ */
+      .wrapper {
+        width: 100%;
+        max-width: 460px;
+        animation: fadeUp 1.4s ease forwards;
+        opacity: 0;
+        transform: translateY(25px);
+      }
+
+      /* ============================
+      SEARCH BAR CORE
+============================ */
+      .search-bar {
+        width: 380px;
+        height: 60px;
+        padding: 0 15px;
+        display: flex;
+        align-items: center;
+        position: relative;
+
+        background: rgba(0, 255, 255, 0.08);
+        border: 2px solid cyan;
+        border-radius: 16px;
+
+        clip-path: polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%, 10% 50%);
+
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 25px cyan, inset 0 0 25px rgba(0, 255, 255, 0.25);
+
+        transition: 0.4s ease-in-out;
+      }
+
+      /* Expand when active */
+      .search-bar:focus-within {
+        width: 460px;
+        border-color: magenta;
+        box-shadow: 0 0 28px magenta, inset 0 0 30px rgba(255, 0, 255, 0.3);
+      }
+
+      /* ============================
+      INPUT FIELD
+============================ */
+      .search-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: 20px;
+        color: cyan;
+      }
+
+      ::placeholder {
+        color: rgba(0, 255, 255, 0.6);
+      }
+
+      /* ============================
+      SCANNING LINE EFFECT
+============================ */
+      .search-bar::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 3px;
+        top: 0;
+        background: linear-gradient(90deg, transparent, cyan, transparent);
+        animation: scan 2s linear infinite;
+        opacity: 0.35;
+      }
+
+      /* ============================
+      SEARCH BUTTON
+============================ */
+      .search-btn {
+        width: 42px;
+        height: 42px;
+        border: 2px solid cyan;
+        border-radius: 50%;
+        background: transparent;
+        cursor: pointer;
+        position: relative;
+        margin-left: 10px;
+        transition: 0.3s;
+      }
+
+      .search-btn::before {
+        content: "";
+        position: absolute;
+        inset: 7px;
+        border: 2px solid cyan;
+        border-radius: 50%;
+      }
+
+      .search-btn::after {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 3px;
+        background: cyan;
+        right: 3px;
+        bottom: 5px;
+        transform: rotate(45deg);
+        border-radius: 2px;
+      }
+
+      .search-btn:hover {
+        border-color: magenta;
+        box-shadow: 0 0 14px magenta;
+      }
+      .search-btn:hover::before,
+      .search-btn:hover::after {
+        background: magenta;
+        border-color: magenta;
+      }
+
+      /* ============================
+      VOICE INPUT BUTTON
+============================ */
+      .voice-btn {
+        width: 40px;
+        height: 40px;
+        background: transparent;
+        border: 2px solid #ff0066;
+        border-radius: 50%;
+        margin-left: 10px;
+        cursor: pointer;
+        position: relative;
+        transition: 0.3s;
+      }
+
+      .voice-btn::before {
+        content: "";
+        width: 10px;
+        height: 18px;
+        background: #ff0066;
+        border-radius: 5px;
+        position: absolute;
+        top: 9px;
+        left: 14px;
+      }
+
+      .voice-btn:hover {
+        box-shadow: 0 0 12px #ff0066;
+      }
+
+      /* ============================
+      SUGGESTION DROPDOWN
+============================ */
+      .suggestions {
+        margin-top: 12px;
+        width: 100%;
+        background: rgba(0, 255, 255, 0.09);
+        border: 1px solid cyan;
+        border-radius: 10px;
+        padding: 10px;
+        list-style: none;
+        display: none;
+        animation: fadeUp 0.3s ease forwards;
+      }
+
+      .suggestions li {
+        padding: 6px 4px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: 0.2s;
+      }
+
+      .suggestions li:hover {
+        background: rgba(0, 255, 255, 0.2);
+      }
+
+      /* ============================
+      DARK/LIGHT MODE TOGGLE
+============================ */
+      .toggle {
+        margin-top: 20px;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        color: white;
+        font-size: 18px;
+      }
+      body.light .toggle {
+        color: #111;
+      }
+
+      /* ============================
+      ANIMATIONS
+============================ */
+      @keyframes scan {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      @keyframes fadeUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ============================
+      RESPONSIVE
+============================ */
+      @media (max-width: 500px) {
+        .search-bar {
+          width: 270px;
+        }
+        .search-bar:focus-within {
+          width: 300px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <!-- SEARCH BAR -->
+      <div class="search-bar">
+        <input
+          id="searchInput"
+          class="search-input"
+          type="text"
+          placeholder="Initializing scan..."
+        />
+        <button class="search-btn" id="searchBtn"></button>
+        <button class="voice-btn" id="voiceBtn"></button>
+      </div>
+
+      <!-- Suggestions -->
+      <ul class="suggestions" id="suggestions"></ul>
+
+      <!-- Dark/Light toggle -->
+      <div class="toggle" id="themeToggle">Toggle Theme</div>
+    </div>
+
+    <script>
+      /* =============================
+    AUTO-SUGGESTIONS FEATURE
+============================= */
+      const suggestionsList = [
+        "Cyber search protocol",
+        "Launch AI interface",
+        "Neon system diagnostics",
+        "Quantum scan",
+        "Activate encryption",
+        "Open hyperspace coordinates",
+      ];
+
+      const input = document.getElementById("searchInput");
+      const suggestionsBox = document.getElementById("suggestions");
+
+      input.addEventListener("input", () => {
+        const query = input.value.toLowerCase();
+        suggestionsBox.innerHTML = "";
+        if (!query) {
+          suggestionsBox.style.display = "none";
+          return;
+        }
+
+        const matched = suggestionsList.filter((item) =>
+          item.toLowerCase().includes(query)
+        );
+        matched.forEach((item) => {
+          let li = document.createElement("li");
+          li.textContent = item;
+          li.onclick = () => {
+            input.value = item;
+            suggestionsBox.style.display = "none";
+          };
+          suggestionsBox.appendChild(li);
+        });
+
+        suggestionsBox.style.display = matched.length ? "block" : "none";
+      });
+
+      /* =============================
+    DARK/LIGHT THEME TOGGLE
+============================= */
+      document.getElementById("themeToggle").onclick = () => {
+        document.body.classList.toggle("light");
+      };
+
+      /* =============================
+    SEARCH BUTTON FUNCTIONALITY
+============================= */
+      document.getElementById("searchBtn").onclick = () => {
+        alert("SEARCHING FOR: " + input.value);
+      };
+
+      /* =============================
+    VOICE SEARCH (Web Speech API)
+============================= */
+      const voiceBtn = document.getElementById("voiceBtn");
+
+      if ("webkitSpeechRecognition" in window) {
+        const recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        voiceBtn.onclick = () => {
+          recognition.start();
+          voiceBtn.style.boxShadow = "0 0 12px red";
+        };
+
+        recognition.onresult = (event) => {
+          input.value = event.results[0][0].transcript;
+          voiceBtn.style.boxShadow = "none";
+        };
+
+        recognition.onend = () => {
+          voiceBtn.style.boxShadow = "none";
+        };
+      } else {
+        voiceBtn.onclick = () =>
+          alert("Your browser doesn't support voice recognition.");
+      }
+    </script>
+  </body>
+</html>
