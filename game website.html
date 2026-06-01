@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ultimate Cool Website</title>
+
+    <style>
+      /* --------------------------------------------------
+    GLOBAL + BACKGROUND
+-------------------------------------------------- */
+      body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        background-size: 400% 400%;
+        animation: gradientMove 12s ease infinite;
+        overflow-x: hidden;
+        color: white;
+        transition: background 0.3s, color 0.3s;
+      }
+      .dark {
+        background: #111;
+        color: white;
+      }
+
+      @keyframes gradientMove {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* --------------------------------------------------
+    CYBERPUNK / NEON MODE
+-------------------------------------------------- */
+      .neon {
+        background: #030014 !important;
+        color: #0ff !important;
+        text-shadow: 0 0 10px #0ff;
+      }
+
+      .neon * {
+        border-color: #0ff !important;
+        text-shadow: 0 0 15px #0ff;
+        box-shadow: 0 0 20px #0ff !important;
+      }
+
+      /* --------------------------------------------------
+    HEADER + NAV
+-------------------------------------------------- */
+      header {
+        display: flex;
+        justify-content: space-between;
+        padding: 1em 2em;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        position: sticky;
+        top: 0;
+      }
+      nav {
+        position: absolute;
+        top: 70px;
+        right: -200px;
+        width: 200px;
+        background: white;
+        padding: 1em;
+        border-radius: 10px;
+        transition: 0.3s;
+        color: black;
+      }
+      nav.open {
+        right: 20px;
+      }
+      nav a {
+        display: block;
+        padding: 0.5em 0;
+        color: black;
+      }
+
+      /* Hamburger */
+      .menu-btn {
+        width: 30px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .menu-btn span {
+        height: 4px;
+        background: white;
+        transition: 0.3s;
+      }
+      .menu-btn.active span:nth-child(1) {
+        transform: translateY(9px) rotate(45deg);
+      }
+      .menu-btn.active span:nth-child(2) {
+        opacity: 0;
+      }
+      .menu-btn.active span:nth-child(3) {
+        transform: translateY(-9px) rotate(-45deg);
+      }
+
+      /* --------------------------------------------------
+    BUTTONS + RIPPLE
+-------------------------------------------------- */
+      .cool-btn {
+        padding: 0.7em 1.4em;
+        border: none;
+        background: #4a90e2;
+        color: white;
+        cursor: pointer;
+        border-radius: 8px;
+        position: relative;
+        margin: 1em;
+        overflow: hidden;
+      }
+      .cool-btn::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.5);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+
+      /* --------------------------------------------------
+    HERO SECTION
+-------------------------------------------------- */
+      .hero {
+        height: 60vh;
+        background: url("https://images.unsplash.com/photo-1503264116251-35a269479413")
+          center/cover fixed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 3em;
+        text-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
+      }
+
+      /* --------------------------------------------------
+    GLASS CARD + 3D TILT
+-------------------------------------------------- */
+      .glass-card {
+        margin: 3em auto;
+        width: 300px;
+        padding: 2em;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(15px);
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: transform 0.4s;
+        color: white;
+        transform-style: preserve-3d;
+      }
+
+      /* --------------------------------------------------
+    API BOX
+-------------------------------------------------- */
+      .api-box {
+        margin: 2em;
+        padding: 2em;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+
+      /* --------------------------------------------------
+    SCROLL REVEAL
+-------------------------------------------------- */
+      .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: 0.7s ease;
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* --------------------------------------------------
+    CANVAS PARTICLES
+-------------------------------------------------- */
+      #particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+      }
+
+      /* --------------------------------------------------
+    CHAT WIDGET
+-------------------------------------------------- */
+      #chatWidget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #4a90e2;
+        padding: 0.7em 1em;
+        border-radius: 50%;
+        font-size: 1.5em;
+        cursor: pointer;
+      }
+      #chatBox {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 250px;
+        background: white;
+        color: black;
+        padding: 1em;
+        border-radius: 10px;
+        display: none;
+      }
+
+      /* --------------------------------------------------
+    MINI GAME
+-------------------------------------------------- */
+      #gameCanvas {
+        display: block;
+        margin: 2em auto;
+        background: #000;
+        border: 3px solid white;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===================== NAV ===================== -->
+    <header>
+      <div class="logo">⚡ UltraCool</div>
+      <div class="menu-btn" id="menuBtn">
+        <span></span><span></span><span></span>
+      </div>
+      <nav id="navMenu">
+        <a href="#">Home</a>
+        <a href="#">Projects</a>
+        <a href="#">Contact</a>
+      </nav>
+    </header>
+
+    <!-- ===================== HERO =================== -->
+    <section class="hero reveal">Ultimate Cool Website</section>
+
+    <!-- ===================== CONTROL BUTTONS ========= -->
+    <div style="text-align: center">
+      <button id="darkModeBtn" class="cool-btn">🌙 Dark Mode</button>
+      <button id="neonBtn" class="cool-btn">💡 Neon Mode</button>
+    </div>
+
+    <!-- ===================== GLASS CARD =============== -->
+    <section class="glass-card reveal" id="tiltCard">
+      <h2>3D Tilt Glass Card</h2>
+      <p>Moves with phone motion.</p>
+    </section>
+
+    <!-- ===================== API SECTION =============== -->
+    <section class="api-box reveal">
+      <h2>Random Cat Fact</h2>
+      <p id="catFact">Click the button!</p>
+      <button id="fetchFact" class="cool-btn">Get Cat Fact</button>
+    </section>
+
+    <!-- ===================== MINI GAME ================= -->
+    <h2 style="text-align: center">🎮 Mini Game: Dodge the Squares</h2>
+    <canvas id="gameCanvas" width="350" height="500"></canvas>
+
+    <!-- ===================== CHAT ===================== -->
+    <div id="chatWidget">💬</div>
+    <div id="chatBox">
+      <h3>Chatbot</h3>
+      <p>Hello! Need help?</p>
+    </div>
+
+    <!-- ===================== PARTICLES ================ -->
+    <canvas id="particles"></canvas>
+
+    <script>
+      /* --------------------------------------------------
+          HAMBURGER MENU
+      -------------------------------------------------- */
+      const menuBtn = document.getElementById("menuBtn");
+      const navMenu = document.getElementById("navMenu");
+      menuBtn.addEventListener("click", () => {
+        menuBtn.classList.toggle("active");
+        navMenu.classList.toggle("open");
+      });
+
+      /* --------------------------------------------------
+          DARK MODE
+      -------------------------------------------------- */
+      document.getElementById("darkModeBtn").onclick = () =>
+        document.body.classList.toggle("dark");
+
+      /* --------------------------------------------------
+          NEON MODE
+      -------------------------------------------------- */
+      document.getElementById("neonBtn").onclick = () =>
+        document.body.classList.toggle("neon");
+
+      /* --------------------------------------------------
+          RIPPLE BUTTONS
+      -------------------------------------------------- */
+      document.querySelectorAll(".cool-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const r = document.createElement("span");
+          r.style.left = e.clientX - e.target.offsetLeft + "px";
+          r.style.top = e.clientY - e.target.offsetTop + "px";
+          r.classList.add("ripple");
+          btn.appendChild(r);
+          setTimeout(() => r.remove(), 600);
+        });
+      });
+
+      /* --------------------------------------------------
+          CAT FACT API
+      -------------------------------------------------- */
+      document.getElementById("fetchFact").onclick = async () => {
+        const res = await fetch("https://catfact.ninja/fact");
+        const data = await res.json();
+        document.getElementById("catFact").textContent = data.fact;
+      };
+
+      /* --------------------------------------------------
+          PARTICLE CURSOR
+      -------------------------------------------------- */
+      const canvas = particles;
+      const ctx = canvas.getContext("2d");
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+
+      let plist = [];
+      document.addEventListener("mousemove", (e) => {
+        for (let i = 0; i < 4; i++) {
+          plist.push({
+            x: e.clientX,
+            y: e.clientY,
+            size: Math.random() * 6 + 2,
+            sx: (Math.random() - 0.5) * 2,
+            sy: (Math.random() - 0.5) * 2,
+            c: `hsl(${Math.random() * 360},100%,60%)`,
+          });
+        }
+      });
+      function animateParticles() {
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+        plist.forEach((p, i) => {
+          p.x += p.sx;
+          p.y += p.sy;
+          p.size -= 0.1;
+          if (p.size <= 0) plist.splice(i, 1);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.c;
+          ctx.fill();
+        });
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
+
+      /* --------------------------------------------------
+          CHAT WIDGET
+      -------------------------------------------------- */
+      chatWidget.onclick = () =>
+        (chatBox.style.display =
+          chatBox.style.display === "block" ? "none" : "block");
+
+      /* --------------------------------------------------
+          SCROLL REVEAL
+      -------------------------------------------------- */
+      const revealEls = document.querySelectorAll(".reveal");
+      function revealCheck() {
+        revealEls.forEach((el) => {
+          const top = el.getBoundingClientRect().top;
+          if (top < window.innerHeight - 100) el.classList.add("visible");
+        });
+      }
+      window.addEventListener("scroll", revealCheck);
+      revealCheck();
+
+      /* --------------------------------------------------
+          3D TILT / GYROSCOPE
+      -------------------------------------------------- */
+      const card = document.getElementById("tiltCard");
+      window.addEventListener("deviceorientation", (e) => {
+        card.style.transform = `rotateY(${e.gamma / 8}deg) rotateX(${
+          e.beta / 8
+        }deg)`;
+      });
+
+      /* --------------------------------------------------
+          MINI GAME
+      -------------------------------------------------- */
+      const gc = document.getElementById("gameCanvas");
+      const g = gc.getContext("2d");
+      let player = { x: 150, y: 450, size: 30 };
+      let enemies = [];
+      let score = 0;
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") player.x -= 20;
+        if (e.key === "ArrowRight") player.x += 20;
+      });
+
+      function spawnEnemy() {
+        enemies.push({
+          x: Math.random() * 320,
+          y: -40,
+          size: 20,
+          s: 3 + Math.random() * 2,
+        });
+      }
+      setInterval(spawnEnemy, 700);
+
+      function gameLoop() {
+        g.clearRect(0, 0, 350, 500);
+        g.fillStyle = "cyan";
+        g.fillRect(player.x, player.y, player.size, player.size);
+
+        enemies.forEach((en, i) => {
+          en.y += en.s;
+          g.fillStyle = "red";
+          g.fillRect(en.x, en.y, en.size, en.size);
+
+          if (en.y > 500) {
+            enemies.splice(i, 1);
+            score++;
+          }
+
+          if (
+            en.x < player.x + 30 &&
+            en.x + 20 > player.x &&
+            en.y < player.y + 30 &&
+            en.y + 20 > player.y
+          ) {
+            // alert("Game Over! Score: " + score);
+            location.reload();
+          }
+        });
+
+        requestAnimationFrame(gameLoop);
+      }
+      gameLoop();
+    </script>
+  </body>
+</html>
