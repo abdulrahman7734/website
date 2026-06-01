@@ -230,6 +230,64 @@
         background: #000;
         border: 3px solid white;
       }
+
+      /* --------------------------------------------------
+    GAME OVER MODAL
+-------------------------------------------------- */
+      #gameOverModal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 2em;
+        border-radius: 15px;
+        text-align: center;
+        z-index: 1000;
+        border: 3px solid #ff0000;
+      }
+      #gameOverModal h2 {
+        color: #ff0000;
+        font-size: 2em;
+        margin: 0.5em 0;
+      }
+      #gameOverModal p {
+        color: white;
+        font-size: 1.5em;
+        margin: 1em 0;
+      }
+      #gameOverModal button {
+        padding: 0.7em 1.4em;
+        background: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        margin-top: 1em;
+      }
+      #gameOverModal button:hover {
+        background: #357abd;
+      }
+
+      #gameOverOverlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+
+      #scoreDisplay {
+        color: white;
+        text-align: center;
+        font-size: 1.5em;
+        margin: 1em 0;
+      }
     </style>
   </head>
   <body>
@@ -270,7 +328,16 @@
 
     <!-- ===================== MINI GAME ================= -->
     <h2 style="text-align: center">🎮 Mini Game: Dodge the Squares</h2>
+    <div id="scoreDisplay">Score: <span id="score">0</span></div>
     <canvas id="gameCanvas" width="350" height="500"></canvas>
+
+    <!-- ===================== GAME OVER MODAL ========== -->
+    <div id="gameOverOverlay"></div>
+    <div id="gameOverModal">
+      <h2>Game Over! 💥</h2>
+      <p>Final Score: <span id="finalScore">0</span></p>
+      <button onclick="restartGame()">Play Again</button>
+    </div>
 
     <!-- ===================== CHAT ===================== -->
     <div id="chatWidget">💬</div>
@@ -404,23 +471,31 @@
       let player = { x: 150, y: 450, size: 30 };
       let enemies = [];
       let score = 0;
+      let gameRunning = true;
+      let spawnInterval;
+      let gameLoopId;
 
       document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft") player.x -= 20;
-        if (e.key === "ArrowRight") player.x += 20;
+        if (gameRunning) {
+          if (e.key === "ArrowLeft" && player.x > 0) player.x -= 20;
+          if (e.key === "ArrowRight" && player.x < 320) player.x += 20;
+        }
       });
 
       function spawnEnemy() {
-        enemies.push({
-          x: Math.random() * 320,
-          y: -40,
-          size: 20,
-          s: 3 + Math.random() * 2,
-        });
+        if (gameRunning) {
+          enemies.push({
+            x: Math.random() * 320,
+            y: -40,
+            size: 20,
+            s: 3 + Math.random() * 2,
+          });
+        }
       }
-      setInterval(spawnEnemy, 700);
 
       function gameLoop() {
+        if (!gameRunning) return;
+
         g.clearRect(0, 0, 350, 500);
         g.fillStyle = "cyan";
         g.fillRect(player.x, player.y, player.size, player.size);
@@ -433,6 +508,7 @@
           if (en.y > 500) {
             enemies.splice(i, 1);
             score++;
+            document.getElementById("score").textContent = score;
           }
 
           if (
@@ -441,13 +517,36 @@
             en.y < player.y + 30 &&
             en.y + 20 > player.y
           ) {
-            // alert("Game Over! Score: " + score);
-            location.reload();
+            gameOver();
+            return;
           }
         });
 
-        requestAnimationFrame(gameLoop);
+        gameLoopId = requestAnimationFrame(gameLoop);
       }
+
+      function gameOver() {
+        gameRunning = false;
+        clearInterval(spawnInterval);
+        cancelAnimationFrame(gameLoopId);
+        document.getElementById("finalScore").textContent = score;
+        document.getElementById("gameOverModal").style.display = "block";
+        document.getElementById("gameOverOverlay").style.display = "block";
+      }
+
+      function restartGame() {
+        gameRunning = true;
+        player = { x: 150, y: 450, size: 30 };
+        enemies = [];
+        score = 0;
+        document.getElementById("score").textContent = score;
+        document.getElementById("gameOverModal").style.display = "none";
+        document.getElementById("gameOverOverlay").style.display = "none";
+        spawnInterval = setInterval(spawnEnemy, 700);
+        gameLoop();
+      }
+
+      spawnInterval = setInterval(spawnEnemy, 700);
       gameLoop();
     </script>
   </body>
